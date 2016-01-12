@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/anacrolix/torrent"
 )
 
 const fileNumberLimit = 1000
@@ -52,27 +50,30 @@ func (s *Server) serveFiles(w http.ResponseWriter, r *http.Request) {
 		}
 		switch r.Method {
 		case "GET":
-			var t *torrent.File
-
-			for _, tf := range s.engine.GetTorrentsFile() {
-				if tf.Path() == url {
-					t = tf
-					break
+			tfile := s.engine.GetTorrentByFileName(url)
+			if s.engine.GetTorrentPercent(tfile) < 100.0 {
+				entry, err := NewFileReader(tfile)
+				if err != nil {
+					http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
+					return
 				}
-			}
 
-			entry, err := NewFileReader(t)
-			if err != nil {
-				http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
-				return
-			}
+				defer func() {
+					if err := entry.Close(); err != nil {
+						log.Printf("Error closing file reader: %s\n", err)
+					}
+				}()
+				http.ServeContent(w, r, info.Name(), info.ModTime(), entry)
 
-			defer func() {
-				if err := entry.Close(); err != nil {
-					log.Printf("Error closing file reader: %s\n", err)
+			} else {
+				f, err := os.Open(file)
+				if err != nil {
+					http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
+					return
 				}
-			}()
-			http.ServeContent(w, r, info.Name(), info.ModTime(), entry)
+				http.ServeContent(w, r, info.Name(), info.ModTime(), f)
+				f.Close()
+			}
 		case "DELETE":
 			if err := os.RemoveAll(file); err != nil {
 				http.Error(w, "Delete failed: "+err.Error(), http.StatusInternalServerError)
