@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/anacrolix/torrent"
 )
 
 const fileNumberLimit = 1000
@@ -50,13 +52,27 @@ func (s *Server) serveFiles(w http.ResponseWriter, r *http.Request) {
 		}
 		switch r.Method {
 		case "GET":
-			f, err := os.Open(file)
+			var t *torrent.File
+
+			for _, tf := range s.engine.GetTorrentsFile() {
+				if tf.Path() == url {
+					t = tf
+					break
+				}
+			}
+
+			entry, err := NewFileReader(t)
 			if err != nil {
-				http.Error(w, "File open error: "+err.Error(), http.StatusBadRequest)
+				http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
-			http.ServeContent(w, r, info.Name(), info.ModTime(), f)
-			f.Close()
+
+			defer func() {
+				if err := entry.Close(); err != nil {
+					log.Printf("Error closing file reader: %s\n", err)
+				}
+			}()
+			http.ServeContent(w, r, info.Name(), info.ModTime(), entry)
 		case "DELETE":
 			if err := os.RemoveAll(file); err != nil {
 				http.Error(w, "Delete failed: "+err.Error(), http.StatusInternalServerError)

@@ -46,7 +46,7 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   }
 
   $scope.isdownloading = function() {
-    return n.$file && n.$file.Percent < 100;
+    return n.$file && n.$file.Percent < 5;
   };
 
   $scope.preremove = function() {

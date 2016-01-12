@@ -103,6 +103,18 @@ func (e *Engine) GetTorrents() map[string]*Torrent {
 	return e.ts
 }
 
+func (e *Engine) GetTorrentsFile() [255]*torrent.File {
+	var files [255]*torrent.File
+	var i int
+	for _, tt := range e.client.Torrents() {
+		t := e.upsertTorrent(tt)
+		l, _ := e.getLargestFile(t.InfoHash)
+		files[i] = l
+		i++
+	}
+	return files
+}
+
 func (e *Engine) upsertTorrent(tt torrent.Torrent) *Torrent {
 	ih := tt.InfoHash().HexString()
 	torrent, ok := e.ts[ih]
@@ -125,6 +137,24 @@ func (e *Engine) getTorrent(infohash string) (*Torrent, error) {
 		return t, fmt.Errorf("Missing torrent %x", ih)
 	}
 	return t, nil
+}
+
+func (e *Engine) getLargestFile(infohash string) (*torrent.File, error) {
+	t, err := e.getTorrent(infohash)
+	if err != nil {
+		return nil, err
+	}
+	var target torrent.File
+	var maxSize int64
+
+	for _, file := range t.t.Files() {
+		if maxSize < file.Length() {
+			maxSize = file.Length()
+			target = file
+		}
+	}
+
+	return &target, nil
 }
 
 func (e *Engine) getOpenTorrent(infohash string) (*Torrent, error) {
@@ -158,6 +188,12 @@ func (e *Engine) StartTorrent(infohash string) error {
 	}
 	if t.t.Info() != nil {
 		t.t.DownloadAll()
+		// Prioritize first 5% of the file.
+		l, err := e.getLargestFile(infohash)
+		if err != nil {
+			return err
+		}
+		l.PrioritizeRegion(0, int64(t.t.NumPieces()/100*5))
 	}
 	return nil
 }
