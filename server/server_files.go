@@ -50,21 +50,30 @@ func (s *Server) serveFiles(w http.ResponseWriter, r *http.Request) {
 		}
 		switch r.Method {
 		case "GET":
-			tfile := s.engine.GetTorrentByFileName(url)
-			if s.engine.GetTorrentPercent(tfile) < 100.0 {
-				entry, err := NewFileReader(tfile)
-				if err != nil {
-					http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				defer func() {
-					if err := entry.Close(); err != nil {
-						log.Printf("Error closing file reader: %s\n", err)
+			tfile, err := s.engine.GetTorrentByFileName(url)
+			if err == nil {
+				if p := s.engine.GetTorrentPercent(tfile); p < 100.0 {
+					entry, err := NewFileReader(tfile)
+					if err != nil {
+						http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
+						return
 					}
-				}()
-				http.ServeContent(w, r, info.Name(), info.ModTime(), entry)
 
+					defer func() {
+						if err := entry.Close(); err != nil {
+							log.Printf("Error closing file reader: %s\n", err)
+						}
+					}()
+					http.ServeContent(w, r, info.Name(), info.ModTime(), entry)
+				} else {
+					f, err := os.Open(file)
+					if err != nil {
+						http.Error(w, "File open error: "+err.Error(), http.StatusInternalServerError)
+						return
+					}
+					http.ServeContent(w, r, info.Name(), info.ModTime(), f)
+					f.Close()
+				}
 			} else {
 				f, err := os.Open(file)
 				if err != nil {

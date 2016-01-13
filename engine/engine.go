@@ -103,17 +103,24 @@ func (e *Engine) GetTorrents() map[string]*Torrent {
 	return e.ts
 }
 
-func (e *Engine) GetTorrentByFileName(name string) *torrent.File {
-	var target *torrent.File
+func (e *Engine) GetTorrentByFileName(name string) (*torrent.File, error) {
+	var target torrent.File
+	var found bool
 	for _, tt := range e.client.Torrents() {
 		t := e.upsertTorrent(tt)
-		l, _ := e.getLargestFile(t.InfoHash)
-		if l.Path() == name {
-			target = l
-			break
+		for _, file := range t.t.Files() {
+			if file.Path() == name {
+				target = file
+				found = true
+				break
+			}
 		}
 	}
-	return target
+	if found {
+		return &target, nil
+	} else {
+		return nil, fmt.Errorf("No torrent found with this file ")
+	}
 }
 
 func (e *Engine) GetTorrentPercent(file *torrent.File) float32 {
