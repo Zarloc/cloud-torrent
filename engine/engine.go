@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/anacrolix/torrent"
+	"github.com/anacrolix/torrent/metainfo"
 )
 
 //the Engine Cloud Torrent engine, backed by anacrolix/torrent
@@ -38,7 +39,6 @@ func (e *Engine) Configure(c Config) error {
 	tc := torrent.Config{
 		DataDir:           c.DownloadDirectory,
 		ListenAddr:        "0.0.0.0:" + strconv.Itoa(c.IncomingPort),
-		ConfigDir:         filepath.Join(c.DownloadDirectory, ".config"),
 		NoUpload:          !c.EnableUpload,
 		Seed:              c.EnableSeeding,
 		DisableEncryption: c.DisableEncryption,
@@ -48,7 +48,7 @@ func (e *Engine) Configure(c Config) error {
 		return err
 	}
 	e.mut.Lock()
-	e.cacheDir = filepath.Join(tc.ConfigDir, "torrents")
+	e.cacheDir = filepath.Join(c.DownloadDirectory, ".config", "torrents")
 	if files, err := ioutil.ReadDir(e.cacheDir); err == nil {
 		for _, f := range files {
 			if filepath.Ext(f.Name()) != ".torrent" {
@@ -128,7 +128,7 @@ func (e *Engine) GetTorrentPercent(file *torrent.File) float32 {
 	return t.Percent
 }
 
-func (e *Engine) upsertTorrent(tt torrent.Torrent) *Torrent {
+func (e *Engine) upsertTorrent(tt *torrent.Torrent) *Torrent {
 	ih := tt.InfoHash().HexString()
 	torrent, ok := e.ts[ih]
 	if !ok {
@@ -272,8 +272,8 @@ func (e *Engine) StopFile(infohash, filepath string) error {
 	return fmt.Errorf("Unsupported")
 }
 
-func str2ih(str string) (torrent.InfoHash, error) {
-	var ih torrent.InfoHash
+func str2ih(str string) (metainfo.Hash, error) {
+	var ih metainfo.Hash
 	e, err := hex.Decode(ih[:], []byte(str))
 	if err != nil {
 		return ih, fmt.Errorf("Invalid hex string")
