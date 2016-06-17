@@ -81,7 +81,7 @@ app.filter('bytes', function(bytes) {
 app.factory('bytes', function() {
   var scale = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   return function(n) {
-    if (typeof n !== 'number') {
+    if (typeof n !== 'number' || n == 0) {
       return "-";
     }
     var e = Math.floor(Math.log(n) / Math.log(1024))
