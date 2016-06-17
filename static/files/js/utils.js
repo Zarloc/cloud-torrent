@@ -79,18 +79,15 @@ app.filter('bytes', function(bytes) {
 });
 
 app.factory('bytes', function() {
-  var scale = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  var scale = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   return function(n) {
-    var i = 0;
-    var s = scale[i];
     if (typeof n !== 'number') {
       return "-";
     }
-    while (n > 1000) {
-      s = scale[++i] || 'x10^' + (i * 3);
-      n = Math.round(n / 100) / 10;
-    }
-    return "" + n + " " + s;
+    var e = Math.floor(Math.log(n) / Math.log(1024))
+    var s = scale[e];
+    n /= Math.pow(2, e * 10);
+    return "" + n.toFixed(e > 0) + " " + s;
   };
 });
 
