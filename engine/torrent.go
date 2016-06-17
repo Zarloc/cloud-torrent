@@ -38,7 +38,9 @@ type File struct {
 func (torrent *Torrent) Update(t *torrent.Torrent) {
 	torrent.Name = t.Name()
 	torrent.Loaded = t.Info() != nil
-	torrent.Size = t.Length()
+	if torrent.Loaded {
+		torrent.Size = t.Length()
+	}
 
 	totalChunks := 0
 	totalCompleted := 0
