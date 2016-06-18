@@ -48,15 +48,20 @@ func (e *Engine) Configure(c Config) error {
 		return err
 	}
 	e.mut.Lock()
-	e.cacheDir = filepath.Join(c.DownloadDirectory, ".config", "torrents")
+	e.cacheDir = filepath.Join(c.DownloadDirectory, ".config", "magnets")
+	os.MkdirAll(e.cacheDir, 0777)
 	if files, err := ioutil.ReadDir(e.cacheDir); err == nil {
 		for _, f := range files {
-			if filepath.Ext(f.Name()) != ".torrent" {
+			if filepath.Ext(f.Name()) != ".magnet" {
 				continue
 			}
-			tt, err := client.AddTorrentFromFile(filepath.Join(e.cacheDir, f.Name()))
+
+			b, err := ioutil.ReadFile(filepath.Join(e.cacheDir, f.Name()))
 			if err == nil {
-				e.upsertTorrent(tt)
+				tt, err := client.AddMagnet(string(b[:]))
+				if err == nil {
+					e.upsertTorrent(tt)
+				}
 			}
 		}
 	}
@@ -75,6 +80,8 @@ func (e *Engine) NewTorrent(magnetURI string) error {
 		return err
 	}
 	t := e.upsertTorrent(tt)
+
+	ioutil.WriteFile(filepath.Join(e.cacheDir, t.InfoHash)+".magnet", []byte(magnetURI), 0644)
 
 	go func() {
 		<-t.t.GotInfo()
@@ -225,6 +232,7 @@ func (e *Engine) StopTorrent(infohash string) error {
 	for _, f := range t.Files {
 		if f != nil {
 			f.Started = false
+			f.f.Cancel()
 		}
 	}
 	return nil
@@ -235,7 +243,7 @@ func (e *Engine) DeleteTorrent(infohash string) error {
 	if err != nil {
 		return err
 	}
-	os.Remove(filepath.Join(e.cacheDir, infohash+".torrent"))
+	os.Remove(filepath.Join(e.cacheDir, infohash+".magnet"))
 	delete(e.ts, t.InfoHash)
 	ih, _ := str2ih(infohash)
 	if tt, ok := e.client.Torrent(ih); ok {
