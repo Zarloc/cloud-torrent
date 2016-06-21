@@ -86,4 +86,8 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   $scope.remove = function() {
     $http.delete("/download/" + n.$path);
   };
+
+  $scope.info = function() {
+    window.open("/info/" + n.$path, '_blank').focus();
+  };
 });

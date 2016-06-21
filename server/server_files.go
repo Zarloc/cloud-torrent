@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -87,6 +88,32 @@ func (s *Server) serveFiles(w http.ResponseWriter, r *http.Request) {
 			if err := os.RemoveAll(file); err != nil {
 				http.Error(w, "Delete failed: "+err.Error(), http.StatusInternalServerError)
 			}
+		default:
+			http.Error(w, "Not allowed", http.StatusMethodNotAllowed)
+		}
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/info/") {
+		url := strings.TrimPrefix(r.URL.Path, "/info/")
+		dldir := s.state.Config.DownloadDirectory
+		file := filepath.Join(dldir, url)
+		if !strings.HasPrefix(file, dldir) || dldir == file {
+			http.Error(w, "Nice try\n"+dldir+"\n"+file, http.StatusBadRequest)
+			return
+		}
+		_, err := os.Stat(file)
+		if err != nil {
+			http.Error(w, "File stat error: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		switch r.Method {
+		case "GET":
+			out, err := exec.Command("mediainfo", file).Output()
+			if err != nil {
+				http.Error(w, "Error: "+err.Error(), http.StatusInternalServerError)
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write(out)
 		default:
 			http.Error(w, "Not allowed", http.StatusMethodNotAllowed)
 		}
