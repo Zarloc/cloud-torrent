@@ -10,23 +10,6 @@ html, body {
 	padding: 0;
 }
 
-.cage {
-	max-width: 700px;
-	margin: 10px auto;
-}
-
-@media (max-width: 740px) {
-    .cage {
-		margin: 10px;
-		padding-top: 0;
-    }
-}
-@media (max-width: 480px) {
-	body .title a {
-		font-size: 1.65rem;
-	}
-}
-
 html body .muted {
 	color: gray;
 }
@@ -60,6 +43,10 @@ footer:hover {
 
 .icon[ng-click] {
 	font-size: 1.2em;
+}
+
+.app {
+	margin: 0px !important;
 }
 
 .app .connect-warning {
