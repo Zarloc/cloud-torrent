@@ -3,6 +3,25 @@
 @import url("./sections/torrents.css");
 @import url("./sections/downloads.css");
 
+/* shitty dark theme */
+body {
+	background-color: #111 !important;
+	color: #bbb !important;
+}
+.ui.segment {
+	background-color: #222 !important;
+}
+.ui.list .list > .item .header, .ui.list > .item .header {
+	color: #bbb !important;
+}
+.ui.list .list > .item .description, .ui.list > .item .description {
+	color: #999 !important;
+}
+input {
+	background-color: #333 !important;
+	color: #999 !important;
+}
+
 /* global styles  */
 html, body {
 	width: 100%;
