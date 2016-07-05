@@ -1,5 +1,5 @@
-<form ng-show="edit" class="ui segment edit form">
-  <h4 class="ui dividing header">Configuration</h4>
+<form ng-show="edit" class="ui inverted segment edit form">
+  <h4 class="ui inverted dividing header">Configuration</h4>
   <div class="field"
     ng-repeat="(k,v) in state.Config"
     ng-init="type = inputType(v)">
@@ -18,7 +18,7 @@
       ng-click="submitConfig()">
       Save
     </div>
-    <div class="ui grey button" ng-click="toggle()">
+    <div class="ui button" ng-click="toggle()">
       Cancel
     </div>
   </div>

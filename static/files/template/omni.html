@@ -2,8 +2,8 @@
 
 <!-- MAGNET EDITOR -->
 <div class="ui segment" ng-show="edit" >
-  <form class="ui edit form">
-    <h4 class="ui dividing header">Magnet URI Editor</h4>
+  <form class="ui inverted edit form">
+    <h4 class="ui inverted dividing header">Magnet URI Editor</h4>
     <div class="field">
       <label>Name</label>
       <div class="field">
@@ -43,13 +43,13 @@
     ng-model="inputs.omni"
     ng-change="parse()"
     ng-enter="submitOmni()"/>
-  <i class="icon"
+  <i class="icon grey"
     ng-class="{search: mode.search, magnet: mode.magnet || mode.torrent,
           help: !mode.search && !mode.magnet && !mode.torrent}"></i>
 </div>
 
 <!-- MAGNET FIELD ERROR -->
-<div ng-show="omnierr" class="ui error message">
+<div ng-show="omnierr" class="ui inverted error message">
   <p>{{omnierr}}</p>
 </div>
 
@@ -77,13 +77,13 @@
   </div>
 </div>
 
-<div class="ui error message" ng-show="mode.search && !inputs.provider">
+<div class="ui inverted error message" ng-show="mode.search && !inputs.provider">
   <p>You have no search providers</p>
 </div>
 
 <!-- SEARCH RESULTS -->
 <div class="results" ng-show="mode.search && results && results.length > 0" >
-  <table class="ui unstackable compact striped tcld table">
+  <table class="ui inverted unstackable compact striped tcld table">
     <tr ng-repeat="r in results">
       <td class="name">
         <a ng-href="{{ r.url }}" target="_blank">{{ r.name }}</a>

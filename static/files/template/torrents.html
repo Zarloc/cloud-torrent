@@ -1,6 +1,6 @@
 
 <div class="torrents-header">
-  <h3 class="ui header">
+  <h3 class="ui inverted header">
     Torrents
   </h3>
   <h5 class="ui files downloading header">
@@ -8,7 +8,7 @@
   </h5>
 </div>
 
-<div ng-if="isEmpty(state.Torrents)" class="ui message nodownloads">
+<div ng-if="isEmpty(state.Torrents)" class="ui inverted message nodownloads">
   <p>Add torrents above</p>
 </div>
 
@@ -106,7 +106,7 @@
                  -->
               </div>
               <div ng-if="f.downloadError"
-                class="ui error message">
+                class="ui inverted error message">
                 <i class="close icon" ng-click="f.downloadError = null"></i>
                 <p>{{f.downloadError}}</p>
               </div>
