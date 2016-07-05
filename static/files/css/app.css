@@ -21,6 +21,9 @@ input {
 	background-color: #333 !important;
 	color: #999 !important;
 }
+.ui.progress {
+	background: rgba(255, 255, 255, 0.29) !important;
+}
 
 /* global styles  */
 html, body {
