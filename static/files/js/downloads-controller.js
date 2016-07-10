@@ -10,7 +10,7 @@ app.controller("DownloadsController", function($scope, $rootScope) {
   };
 });
 
-app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
+app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $location) {
   var n = $scope.node;
   $scope.isfile = function() { return !n.Children; };
   $scope.isdir = function() { return !$scope.isfile(); };
@@ -48,6 +48,15 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   $scope.isdownloading = function() {
     return n.$file && n.$file.Percent < 5;
   };
+
+	$scope.ismediadir = function() {
+		var nchilds = n.Children;
+		for (var i in nchilds) {
+			if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(nchilds[i].Name)) {
+				return true;
+			}
+		}
+	}
 
   $scope.preremove = function() {
     $scope.confirm = true;
@@ -90,4 +99,19 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   $scope.info = function() {
     window.open("/info/" + n.$path, '_blank').focus();
   };
+
+	// M3U8
+	if ($scope.isdir()){
+		var c = [];
+		var nodechilds = n.Children;
+		for (var li in nodechilds) {
+			if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(nodechilds[li].Name)) {
+				c.push($location.absUrl() + "download/" + n.Name + "/" + nodechilds[li].Name);
+			}
+		}
+		var m3uText = c.join("\n");
+		var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
+		$scope.m3u =  URL.createObjectURL(m3uAsBlob);
+	}
+
 });
