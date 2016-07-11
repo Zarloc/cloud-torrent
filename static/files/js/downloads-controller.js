@@ -101,17 +101,25 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
   };
 
 	// M3U8
-	if ($scope.isdir()){
-		var c = [];
-		var nodechilds = n.Children;
-		for (var li in nodechilds) {
-			if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(nodechilds[li].Name)) {
-				c.push($location.absUrl() + "download/" + n.Name + "/" + nodechilds[li].Name);
+	$scope.m3uCreator = function () {
+		if ($scope.isdir() && torrents){
+			var c = [];
+			for (var li in torrents) {
+				if (torrents[li].Name == n.Name) {
+					var torrentslist = torrents[li].Files;
+					for (var la in torrentslist) {
+						if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(torrentslist[la].Path)) {
+							c.push($location.absUrl() + "download/" + torrentslist[la].Path);
+						}
+					}
+				}
 			}
+			var m3uText = c.join("\n");
+			var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
+			return URL.createObjectURL(m3uAsBlob);
 		}
-		var m3uText = c.join("\n");
-		var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
-		$scope.m3u =  URL.createObjectURL(m3uAsBlob);
-	}
+	};
+	
+	$scope.m3u = $scope.m3uCreator();
 
 });

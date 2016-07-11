@@ -8,7 +8,7 @@
 <div class="content">
   <div class="header">
 		<span ng-if="isdir() && !ismediadir()">{{ node.Name }}</span>
-		<a  ng-if="isdir() && ismediadir()" href="{{ m3u }}" download="{{ node.Name }}.m3u8" >{{ node.Name }}</a>
+		<a  ng-if="isdir() && ismediadir()" ng-href="{{ m3u }}" download="{{ node.Name }}.m3u8" >{{ node.Name }}</a>
     <a ng-if="isfile() && !isdownloading()" ng-href="/download/{{ node.$path }}">{{ node.Name }}</a>
     <span ng-if="isfile() && isdownloading()">{{ node.Name }}</span>
     <span ng-if="!isdownloading()" class="controls">
@@ -23,7 +23,7 @@
     </span>
   </div>
   <div class="list" ng-if="isdir() && !closed()">
-    <div class="item" ng-repeat="node in node.Children"
+    <div class="item" ng-repeat="node in node.Children | orderBy:Name:Reverse"
         ng-controller="NodeController"
         ng-include src="'template/download-tree.html'"></div>
   </div>
