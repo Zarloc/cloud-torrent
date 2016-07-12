@@ -106,10 +106,10 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
 			var c = [];
 			for (var li in torrents) {
 				if (torrents[li].Name == n.Name) {
-					var torrentslist = torrents[li].Files;
-					for (var la in torrentslist) {
-						if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(torrentslist[la].Path)) {
-							c.push($location.absUrl() + "download/" + torrentslist[la].Path);
+					var files = torrents[li].Files;
+					for (var la in files) {
+						if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(files[la].Path)) {
+							c.push($location.absUrl() + "download/" + files[la].Path);
 						}
 					}
 				}
