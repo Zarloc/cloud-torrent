@@ -1,5 +1,10 @@
 /* globals app,window */
 
+app.config(['$compileProvider',
+    function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|blob):/);
+}]);
+
 //RootController
 app.run(function($rootScope, search, api) {
 

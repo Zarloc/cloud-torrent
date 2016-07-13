@@ -10,7 +10,7 @@ app.controller("DownloadsController", function($scope, $rootScope) {
   };
 });
 
-app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
+app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $location) {
   var n = $scope.node;
   $scope.isfile = function() { return !n.Children; };
   $scope.isdir = function() { return !$scope.isfile(); };
@@ -48,6 +48,21 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   $scope.isdownloading = function() {
     return n.$file && n.$file.Percent < 5;
   };
+  
+  function ismedia (fileName) {
+    if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(fileName)) {
+      return true;
+    }   
+  }
+
+  $scope.ismediadir = function() {
+    var nchilds = n.Children;
+    for (var i in nchilds) {
+      if (ismedia(nchilds[i].Name)) {
+        return true;
+      }
+    }
+  }
 
   $scope.preremove = function() {
     $scope.confirm = true;
@@ -90,4 +105,27 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout) {
   $scope.info = function() {
     window.open("/info/" + n.$path, '_blank').focus();
   };
+
+  // M3U8
+  $scope.m3uCreator = function () {
+    if ($scope.isdir() && torrents){
+      var c = [];
+      for (var li in torrents) {
+        if (torrents[li].Name == n.Name) {
+          var files = torrents[li].Files;
+          for (var la in files) {
+            if (ismedia(files[la].Path)) {
+              c.push($location.absUrl() + "download/" + files[la].Path);
+            }
+          }
+        }
+      }
+      var m3uText = c.join("\n");
+      var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
+      return URL.createObjectURL(m3uAsBlob);
+    }
+  };
+  
+  $scope.m3u = $scope.m3uCreator();
+
 });
