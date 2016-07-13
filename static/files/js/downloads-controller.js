@@ -108,21 +108,38 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
 
   // M3U8
   $scope.m3uCreator = function () {
-    if ($scope.isdir() && torrents){
+    if ($scope.isdir()) {
+      //console.log(JSON.stringify(n.Children));
+      //console.log(JSON.stringify(torrents));
+
       var c = [];
-      for (var li in torrents) {
-        if (torrents[li].Name == n.Name) {
-          var files = torrents[li].Files;
-          for (var la in files) {
-            if (ismedia(files[la].Path)) {
-              c.push($location.absUrl() + "download/" + files[la].Path);
+
+      for (var la in torrents) {
+        if (torrents[la].Name == n.Name) {
+          var files = torrents[la].Files;
+          for (var lu in files) {
+            if (ismedia(files[lu].Path)) {
+              c.push($location.absUrl() + "download/" + files[lu].Path);
             }
           }
         }
       }
-      var m3uText = c.join("\n");
-      var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
-      return URL.createObjectURL(m3uAsBlob);
+
+      if (c.length == 0) {
+        var nodechilds = n.Children;
+        for (var la in nodechilds) {
+          if (ismedia(nodechilds[la].Name)) {
+            c.push($location.absUrl() + "download/" + n.Name + "/" + nodechilds[la].Name);
+          }
+        }
+      }
+
+      if (c.length > 0) {
+        var m3uText = c.join("\n");
+        var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
+        return URL.createObjectURL(m3uAsBlob);
+      }
+
     }
   };
   
