@@ -48,11 +48,17 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
   $scope.isdownloading = function() {
     return n.$file && n.$file.Percent < 5;
   };
+  
+  function ismedia (fileName) {
+    if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(fileName)) {
+      return true;
+    }   
+  }
 
 	$scope.ismediadir = function() {
 		var nchilds = n.Children;
 		for (var i in nchilds) {
-			if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(nchilds[i].Name)) {
+			if (ismedia(nchilds[i].Name)) {
 				return true;
 			}
 		}
@@ -108,7 +114,7 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
 				if (torrents[li].Name == n.Name) {
 					var files = torrents[li].Files;
 					for (var la in files) {
-						if (/\.(mp4|avi|mkv|flv|webm|mp3|ogg|flac|wav)$/.test(files[la].Path)) {
+						if (ismedia(files[la].Path)) {
 							c.push($location.absUrl() + "download/" + files[la].Path);
 						}
 					}
