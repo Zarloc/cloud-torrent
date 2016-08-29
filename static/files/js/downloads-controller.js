@@ -55,15 +55,6 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
     }   
   }
 
-  $scope.ismediadir = function() {
-    var nchilds = n.Children;
-    for (var i in nchilds) {
-      if (ismedia(nchilds[i].Name)) {
-        return true;
-      }
-    }
-  }
-
   $scope.preremove = function() {
     $scope.confirm = true;
     $timeout(function() {
@@ -106,35 +97,46 @@ app.controller("NodeController", function($scope, $rootScope, $http, $timeout, $
     window.open("/info/" + n.$path, '_blank').focus();
   };
 
+
   // M3U8
+
+  function m3uPush (m3uContent,children,path) {
+    for (var i in children) {
+      if (ismedia(children[i].Name)) {
+        m3uContent.push("#EXTINF: " + children[i].Name);
+        m3uContent.push(encodeURI(path + children[i].Name));
+      } else if (children[i].Children) {
+        m3uContent = m3uPush(m3uContent,children[i].Children,path + children[i].Name + "/");
+      }
+    }
+    return m3uContent;
+  } 
+
   $scope.m3uCreator = function () {
     if ($scope.isdir()) {
-      //console.log(JSON.stringify(n.Children));
-      //console.log(JSON.stringify(torrents));
+      //console.log("Node :" +  JSON.stringify(n));
+      //console.log("Torrent :" + JSON.stringify(torrents));
 
       var c = [];
+      c.push("#EXTM3U");
 
       for (var la in torrents) {
         if (torrents[la].Name == n.Name) {
           var files = torrents[la].Files;
           for (var lu in files) {
             if (ismedia(files[lu].Path)) {
-              c.push($location.absUrl() + "download/" + files[lu].Path);
+              c.push("#EXTINF: " + files[lu].Path);
+              c.push(encodeURI($location.absUrl() + "download/" + files[lu].Path));
             }
           }
         }
       }
 
-      if (c.length == 0) {
-        var nodechilds = n.Children;
-        for (var la in nodechilds) {
-          if (ismedia(nodechilds[la].Name)) {
-            c.push($location.absUrl() + "download/" + n.Name + "/" + nodechilds[la].Name);
-          }
-        }
+      if (c.length == 1) {
+        c = m3uPush(c,n.Children,$location.absUrl() + "download/" + n.$path + "/");
       }
 
-      if (c.length > 0) {
+      if (c.length > 1) {
         var m3uText = c.join("\n");
         var m3uAsBlob = new Blob([m3uText], {type:'text/plain;charset=utf-8;'});
         return URL.createObjectURL(m3uAsBlob);
