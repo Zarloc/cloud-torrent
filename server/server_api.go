@@ -43,11 +43,12 @@ func (s *Server) api(r *http.Request) error {
 	//convert torrent bytes into magnet
 	if action == "torrentfile" {
 		reader := bytes.NewBuffer(data)
-		info, err := metainfo.Load(reader)
+		mi, err := metainfo.Load(reader)
 		if err != nil {
 			return err
 		}
-		data = []byte(info.Magnet().String())
+        info := mi.UnmarshalInfo()
+		data = []byte(mi.Magnet(info.Name, mi.HashInfoBytes()).String())
 		action = "magnet"
 	}
 
